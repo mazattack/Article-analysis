@@ -1,0 +1,34 @@
+---
+title: "Article analysis"
+author: "Maria C. Codlin"
+date: "September 21, 2017"
+output: html_document
+---
+Before I run any parts of the analysis, I load all the packages I use in this file
+```{r load libraries}
+require(dplyr)
+require(ggplot2)
+```
+First in excel, I deleted two rows of non-table data, i.e. title, and a note, and saved the file (S2_Table) as a CSV in the project directory. Then I read it into R and converted it to a table using dplyr
+```{r readfile}
+iso<-read.csv("S2_Table.csv")
+iso<-tbl_df(iso)
+head(iso)
+```
+
+To make life easier, I changed the names of two key variables. First I tried 18O and 13C as the variable names, but it through me an error, I think by starting with a number. 
+```{r }
+names(iso)[12]<-"C13ap"
+names(iso)[13]<-"O18ap"
+names(iso)
+```
+This is my first attempt at a box plot! I figured it out eventually
+```{r }
+g<-ggplot(iso, aes(x=Site, y=O18ap))
+g+geom_boxplot(aes(color=Genus))
+```
+
+```{r }
+
+```
+
