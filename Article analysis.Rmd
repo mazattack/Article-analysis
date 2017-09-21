@@ -25,10 +25,18 @@ names(iso)
 This is my first attempt at a box plot! I figured it out eventually
 ```{r }
 g<-ggplot(iso, aes(x=Site, y=O18ap))
-g+geom_boxplot(aes(color=Genus))
+g+geom_boxplot(aes(color=Genus))+labs(x="" ,y="δ18O apatite-VSMOW (‰)")
+```
+Continuation of cleaning. Some samples were removed from analysis due to the likely hood of contamination or diagenesis. " Five apatite samples with C/P ratios <0.10, three apatite samples with IR-SF values < 2.00, and five apatite samples with IR-SF values >4.00 were excluded from subsequent discussions"
+
+This code deleted all my data?
+```{r }
+iso_total<-iso
 ```
 
 ```{r }
-
+iso<-filter(iso_total, C.P>=0.10, IR.SF>=2.00, IR.SF<=4.00)
+            
+iso
 ```
 
