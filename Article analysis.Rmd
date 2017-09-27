@@ -4,6 +4,11 @@ author: "Maria C. Codlin"
 date: "September 21, 2017"
 output: html_document
 ---
+###Table of contents?
+
+###Introduction to this document, the contents, and the article.
+
+
 Before I run any parts of the analysis, I load all the packages I use in this file
 ```{r load libraries}
 require(dplyr)
@@ -12,11 +17,11 @@ require(ggplot2)
 First in excel, I deleted two rows of non-table data, i.e. title, and a note, and saved the file (S2_Table) as a CSV in the project directory. Then I read it into R and converted it to a table using dplyr
 ```{r readfile}
 iso<-read.csv("S2_Table.csv")
-iso<-tbl_df(iso)
-head(iso)
+iso<-tbl_df(iso_total)
+head(iso_total)
 ```
 
-To make life easier, I changed the names of two key variables. First I tried 18O and 13C as the variable names, but it through me an error, I think by starting with a number. 
+To make life easier, I changed the names of two key variables. First I tried 18O and 13C as the variable names, but it threw me an error, I think by starting with a number. 
 ```{r }
 names(iso)[12]<-"C13ap"
 names(iso)[13]<-"O18ap"
@@ -29,14 +34,57 @@ g+geom_boxplot(aes(color=Genus))+labs(x="" ,y="δ18O apatite-VSMOW (‰)")
 ```
 Continuation of cleaning. Some samples were removed from analysis due to the likely hood of contamination or diagenesis. " Five apatite samples with C/P ratios <0.10, three apatite samples with IR-SF values < 2.00, and five apatite samples with IR-SF values >4.00 were excluded from subsequent discussions"
 
-This code deleted all my data?
 ```{r }
-iso_total<-iso
+iso<-filter(iso_total, between (C.P, 0.1, 0.5)&between (IR.SF, 2.0, 4.0))
+iso            
 ```
 
-```{r }
-iso<-filter(iso_total, C.P>=0.10, IR.SF>=2.00, IR.SF<=4.00)
-            
-iso
+###Outline of what needs to be done. 
+Datasets: 1. Isotopes of modern specimens. 2. Isotopes of ancient specimens.
+
+
+
+
+##Modification of dataset prior to analysis
+- calibration of carbon isotope ratios due to atmospheric changes in the past 130 years to make the modern specimens in the dataset comparable to the ancient ones.**It is not clear whether this is incorperated in the supplimental data or not**  
+
+
+
+##Statistical analyses:
+- Parametric tests: Independent samples t-test (groups of two) and ANOVA (and two or more)
+-Non parametic: Mann-Whitney U test (for Oztoyahualco and pooled other areas) due to very different sample sizes.
+-To see if carbon and oxygen isotopes covary, bivariate Pearson's correlation was used. Sig assumed at a=0.05.
+
+##Mixing model to approximate percentage of C4 and CAM plants in diet:
+%C4CAM= ((delta_13_C_apatite - 9.7)-(-26.1))/14.1
+Due to the level of uncertainties, these percentages are used to reflect the relative contrabutions of C4 and CAM plants between individuals rather than as absolute data. 
+
+
+```{r summary}
+summarise(iso)
+
 ```
 
+
+
+*Because of errors later on, I found I also needed to trim the space at the end of some of the Genus names.* 
+```{r trim white space}
+iso_total$Genus<-str_trim(iso_total$Genus)
+iso_total$Genus<-as.factor(iso_total$Genus)
+levels(iso_total$Genus)
+```
+
+
+```{r sum_table}
+my_sum <- 
+  list("Archaeological samples" = 
+         list("δC13 mean (sd)" = ~ mean_sd(C13ap),
+              "δO18 mean (sd)" = ~ mean_sd(O18ap)),
+       "Modern samples" = 
+         list("δC13 mean (sd)" = ~ mean_sd(modern$modC13),
+              "δO18 mean (sd)" = ~ mean_sd(modern$modO18))
+              )
+              
+summary_table(iso, my_sum[1])
+summary_table(iso, my_sum[2])
+```
