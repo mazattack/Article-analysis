@@ -12,7 +12,9 @@ output: html_document
 Before I run any parts of the analysis, I load all the packages I use in this file
 ```{r load libraries}
 require(dplyr)
+require(stringr)
 require(ggplot2)
+require(qwraps2)
 ```
 First in excel, I deleted two rows of non-table data, i.e. title, and a note, and saved the file (S2_Table) as a CSV in the project directory. Then I read it into R and converted it to a table using dplyr
 ```{r readfile}
