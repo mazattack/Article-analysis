@@ -1,0 +1,113 @@
+
+```{r sum_table}
+my_sum <- 
+  list("Lepus" = 
+        round (c("δC13 n" = sum(!is.na(iso$C13ap)),
+              "δC13 mean" =  mean(iso$C13ap, na.rm=TRUE),
+              "δC13 sd" =  sd(iso$C13ap, na.rm=TRUE),
+              "δO18 n" = sum(!is.na(iso$O18ap)),
+              "δO18 mean" =  mean(iso$O18ap, na.rm=TRUE),
+              "δO18 sd" =  sd(iso$O18ap, na.rm=TRUE)),2),
+       "Sylvilagus" = 
+         round(c("δC13 n" = sum(!is.na(modern$modC13)),
+              "δC13 mean" =  mean(modern$modC13, na.rm=TRUE),
+              "δC13 sd" =  sd(modern$modC13, na.rm=TRUE),
+              "δO18 n" = sum(!is.na(modern$modO18)),
+              "δO18 mean" =  mean(modern$modO18, na.rm=TRUE),
+              "δO18 sd" =  sd(modern$modO18, na.rm=TRUE)),2)
+       )
+    
+my_sum
+```
+
+```{r}
+sum2<-function(x, y){
+for(i in levels(iso$Site)){
+  for(i in levels(iso$Genus)){
+  x1 <- with(iso$Genus, x[Genus==i])
+  y1 <- with(iso$Genus, y[Genus==i])
+result<- summarise(mean (x1, na.rm=TRUE))
+
+  }
+  return(result)}
+}
+
+```
+```{r}
+sum2(x=iso$C13ap, y=iso$O18ap)
+```
+
+round (c("δC13 n" = sum(!is.na(x1)),
+              "δC13 mean" =  mean(x1, na.rm=TRUE),
+              "δC13 sd" =  sd(x1, na.rm=TRUE),
+              "δO18 n" = sum(!is.na(y1)),
+              "δO18 mean" =  mean(y1, na.rm=TRUE),
+              "δO18 sd" =  sd(y1, na.rm=TRUE)),2)
+              
+              
+              
+```{r}
+library(dplyr)
+library(tidyr)
+iso %>%
+  group_by(Genus, Site) %>%
+  summarize(meanC13=mean(C13ap, na.rm=TRUE)) %>%
+  spread(Genus, meanC13)
+```
+```{r}
+carbon_group<-iso %>%
+  select(lab_n:Genus, C13ap)%>%
+  filter(!(is.na(C13ap)))%>%
+  group_by(Site, Genus)
+carbon_group
+oxygen_group<-iso %>%
+  select(lab_n:Genus, O18ap)%>%
+  filter(!(is.na(O18ap)))%>%
+  group_by(Site, Genus)
+
+carbon_group
+oxygen_group
+```
+```{R}
+summ<-carbon_group%>%
+  summarize(length(C13ap), mean(C13ap), sd(C13ap))
+summ2<-oxygen_group %>%
+  summarize(length(O18ap), mean(O18ap), sd(O18ap))
+
+M<-merge(summ,summ2)
+M[,3:8]<-round(M[3:8], 2)
+M
+sum(M$`length(C13ap)`)
+
+```
+round(M, 2)
+```
+t1<-iso$C13ap %>%
+  group_by(Site, Genus) %>%
+  count()
+t2<-iso$O18ap %>%
+  group_by(Site, Genus) %>% 
+  length()
+summ
+t1
+m1<-cbind(summ, t1)
+m2<-cbind(summ2, t2)
+m1
+merge(m1, m2)
+```
+
+
+
+```{r}
+m<-NULL
+
+iso %>%
+  
+ for(i in levels(iso$Genus)){
+   tmp <- with(iso, C13ap[Genus=="Lepus"])
+        m$δC13_n=sum(!is.na(tmp))
+  
+       }
+    
+```
+

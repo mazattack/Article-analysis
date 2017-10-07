@@ -90,3 +90,26 @@ my_sum <-
 summary_table(iso, my_sum[1])
 summary_table(iso, my_sum[2])
 ```
+
+
+
+```{r summary}
+sum(!is.na(iso$C13ap))#the ! means it will return the number that is not NA
+sum(!is.na(iso$O18ap))
+arch_sum<-summarize(iso, meanC13=mean(C13ap, na.rm=TRUE), meanO18=mean(O18ap, na.rm=TRUE), sdC13=sd(C13ap, na.rm=TRUE), sdO18=sd(O18ap, na.rm=TRUE))%>%print()
+
+mod_sum<-summarize(modern, meanC13=mean(modC13, na.rm=TRUE), meanO18=mean(modO18, na.rm=TRUE), seC13=std.error(modC13, na.rm=TRUE), sdO18=sd(modO18, na.rm=TRUE))%>%print()
+
+
+
+```
+
+
+
+These results also differ from what was presented. So I will test to see if they removed outliers prior to t-test. I will use a box plot to identify outliers
+```{r}
+boxplot(SC, ylim = c(), main = "dC13 ap", xlab = "Sylvilagus")
+boxplot(LC, ylim = c(), main = "dC13 ap", xlab = "Lepus")
+boxplot(SO, ylim = c(), main = "dO18 ap", xlab = "Sylvilagus")
+boxplot(LO, ylim = c(), main = "dO18 ap", xlab = "Lepus")
+```

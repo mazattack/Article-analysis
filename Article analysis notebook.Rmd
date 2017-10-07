@@ -20,16 +20,18 @@ require(dplyr)
 require(ggplot2)
 require(stringr)
 require(plotrix) #to calculate standard error
+require(qwraps2)#for summary table
+require(tidyr)
 ```
 First in excel, I deleted two rows of non-table data, i.e. title, and a note, and saved the file (S2_Table) as a CSV in the project directory. Then I read it into R and converted it to a table using dplyr. I trimed white space at beginnings and ends of things where there shouldn't be any, and kept strings as is to avoid issues later down the line. 
 ```{r readfile arch}
-iso_total<-read.csv("S2_Table.csv", header=TRUE, stringsAsFactors = FALSE, strip.white=TRUE)
+iso_total<-read.csv("S2_Table.csv", header=TRUE, stringsAsFactors = FALSE, strip.white=TRUE, na.strings = c("", "NA")) # there were some rows of blanks being included so I used this last bit to convert them to NA
 iso_total<-tbl_df(iso_total)
 head(iso_total)
 str(iso_total)
 ```
 ```{r readfile modern}
-modern<-read.csv("S1_Table.csv", header=TRUE, skip=3, strip.white=TRUE, stringsAsFactors = FALSE) #here I used skip=3 to skip the first 3 rows before the data started
+modern<-read.csv("S1_Table.csv", header=TRUE, skip=3, strip.white=TRUE, stringsAsFactors = FALSE, na.strings = c("", "NA")) #here I used skip=3 to skip the first 3 rows before the data started
 modern<-tbl_df(modern)
 head(modern)
 str(modern)
@@ -39,6 +41,7 @@ To make life easier, I changed the names of two key variables. First I tried 18O
 ```{r rename}
 names(iso_total)[12]<-"C13ap" #I used names(iso_total) to get the position of these for renaming
 names(iso_total)[13]<-"O18ap"
+names(iso_total)[1]<-"lab_n"
 names(modern)[10]<-"modC13"
 names(modern)[11]<-"modO18"
 ```
@@ -56,39 +59,119 @@ iso<-filter(iso_total, (Genus=="Lepus" | Genus=="Sylvilagus") & between (C.P, 0.
 iso$O18ap[iso$O18ap==11.9]<-NA #couldn't figure out how to get this to work with dplyr or chaining
 iso            
 ```
+```{r}
+iso<-filter(iso, !(is.na(iso$Genus))) #removes empty rows
+```
 
-"δ13Capatite = -7.8 ± 2.4‰(N = 114, 1 S.D.) and δ18Oapatite = 26.0‰(N = 113, 1 S.D.). The modern reference specimens exhibited
-mean values of δ13Capatite = -12.4 ± 1.8‰(N = 13, 1 S.D.) and δ18Oapatite = 26.1‰± 1.4 (N = 13, 1 S.D.)."(Somerville et al. 2016:10). *I also note that they should have used "n" here*
+**Descriptive statistics from the article**
+Archaological specimens: δ13Capatite = -7.8 ± 2.4‰(N = 114, 1 S.D.) and δ18Oapatite = 26.0‰(N = 113, 1 S.D.). 
+Modern reference specimens: δ13Capatite = -12.4 ± 1.8‰(N = 13, 1 S.D.) and δ18Oapatite = 26.1‰± 1.4 (N = 13, 1 S.D.)."(Somerville et al. 2016:10). *I also note that they should have used "n" here*
 
 Note: the first time I tried this it was not a match and so I realised I needed to keep the na values in the filter above. The second time it was also not correct so I added two lines to count the number of values in the two columns of interest to see if the sample sizes match. I noted the single value from delta O18 to remove but I still have one extra row in there than their sample number. I checked on the excel, and there is no evidence of this extra row that they excluded. I took a guess that this may have been a species listed in the spreadsheet as Lepus? and removal of this specimen now produces averages that match the data presented in the article. 
 
 ```{r sum_table}
 my_sum <- 
   list("Archaeological samples" = 
-         list("δC13 mean" = ~ mean(C13ap, na.rm=TRUE),
-              "δC13 sd" = ~ sd(C13ap, na.rm=TRUE),
-              "δO18 mean" = ~ mean(O18ap, na.rm=TRUE),
-              "δO18 sd" = ~ sd(O18ap, na.rm=TRUE)),
+        round (c("δC13 n" = sum(!is.na(iso$C13ap)),
+              "δC13 mean" =  mean(iso$C13ap, na.rm=TRUE),
+              "δC13 sd" =  sd(iso$C13ap, na.rm=TRUE),
+              "δO18 n" = sum(!is.na(iso$O18ap)),
+              "δO18 mean" =  mean(iso$O18ap, na.rm=TRUE),
+              "δO18 sd" =  sd(iso$O18ap, na.rm=TRUE)),2),
        "Modern samples" = 
-         list("δC13 mean" = ~ mean(modC13, na.rm=TRUE),
-              "δC13 sd" = ~ sd(modC13, na.rm=TRUE),
-              "δO18 mean" = ~ mean(modO18, na.rm=TRUE),
-              "δO18 sd" = ~ sd(modO18, na.rm=TRUE))
-  )
-              
-summary_table(iso, my_sum[1])
-summary_table(modern, my_sum[2])
+         round(c("δC13 n" = sum(!is.na(modern$modC13)),
+              "δC13 mean" =  mean(modern$modC13, na.rm=TRUE),
+              "δC13 sd" =  sd(modern$modC13, na.rm=TRUE),
+              "δO18 n" = sum(!is.na(modern$modO18)),
+              "δO18 mean" =  mean(modern$modO18, na.rm=TRUE),
+              "δO18 sd" =  sd(modern$modO18, na.rm=TRUE)),2)
+       )
+    
+my_sum
 ```
 
-```{r summary}
-sum(!is.na(iso$C13ap))#the ! means it will return the number that is not NA
-sum(!is.na(iso$O18ap))
-arch_sum<-summarize(iso, meanC13=mean(C13ap, na.rm=TRUE), meanO18=mean(O18ap, na.rm=TRUE), sdC13=sd(C13ap, na.rm=TRUE), sdO18=sd(O18ap, na.rm=TRUE))%>%print()
+#Step 3 "Independent samples t-tests were conducted to compare mean stable isotope ratios of the two genera (Lepus and Sylvilagus) across the archaeological bone sample as a whole. No significant difference between the genera were found in δ13Capatite values (t[110] = -0.806, p = 0.422) or δ18Oapatite values (t[110] = 0.428, p = 0.669)."
 
-mod_sum<-summarize(modern, meanC13=mean(modC13, na.rm=TRUE), meanO18=mean(modO18, na.rm=TRUE), seC13=std.error(modC13, na.rm=TRUE), sdO18=sd(modO18, na.rm=TRUE))%>%print()
+First, I will check that the data fits a normal distribution by comparing it to the qnorm and qqline plots as well as histogram.
 
+**Carbon Apatite Results**
+*Histogram*
+```{r}
+a_hist<-ggplot(iso, aes(C13ap))
+a_hist+geom_histogram(bins= 15)+ facet_wrap(~Genus, scales="free")
+```
+Sylvilagus looks approximately normal while Lepus it is hard to tell. Next I compare using qqplots.
+*QQplots*
+```{r qqplots}
+LC<-iso$C13ap[iso$Genus=="Lepus"]
+SC<-iso$C13ap[iso$Genus=="Sylvilagus"]
+qqnorm(LC,xlab="Theoretical",main="Lepus")
+  qqline(LC)
+  
+  qqnorm(SC,xlab="Theoretical",main="Sylvilagus")
+  qqline(SC)
+```
+Again, Lepus fits this "OK" while Sylvilagus looks pretty good. 
+*Test of equal variance*
+```{r}
+var.test(LC, SC)
+```
+
+This suggests that the variance of the two samples is comparable and thus a two sample T test can be used.First I report the tests for the oxygen data and then provide both t-tests together with a discussion.
+
+
+**Oxygen Apatite Results**
+*Histogram*
+```{r}
+a_hist<-ggplot(iso, aes(O18ap))
+a_hist+geom_histogram(bins=15)+ facet_wrap(~Genus, scales="free")
+```
+Both look like they could be approximately normal
+*QQplots*
+```{r qqplots}
+LO<-iso$O18ap[iso$Genus=="Lepus"]
+SO<-iso$O18ap[iso$Genus=="Sylvilagus"]
+qqnorm(LO,xlab="Theoretical",main="Lepus")
+  qqline(LO)
+  
+  qqnorm(SO,xlab="Theoretical",main="Sylvilagus")
+  qqline(SO)
+```
+Here, Lepus fits the normal distrbution well, while Sylvilagus is divergent. Looking at the histgram again, it could poentitally be bimodal. 
+*Test of equal variance*
+```{r}
+var.test(LO, SO)
+```
+*Carbon apatite two sample T-test*
+```{r}
+t.test(LC, SC, var.equal =TRUE, alternative = "two.sided")
 ```
 
 
 
-##Step 3
+
+*Oxygen apatite two sample T-test*
+```{r}
+t.test(SO, LO, var.equal =TRUE, alternative = "two.sided")
+```
+*Summary:*
+Carbon apatite t-sample t-test comparing Lepus and Sylvilagus: t = 0.5185, df = 112, p-value = 0.6051
+Oxygen apatite t-sample t-test comparing Lepus and Sylvilagus: t = -0.83133, df = 111, p-value = 0.4076
+*Values reported in Somerville et al. (2016:10)*
+δ13Capatite values (t[110] = -0.806, p = 0.422) 
+δ18Oapatite values (t[110] = 0.428, p = 0.669). 
+
+Both of these tests returned different test statistics, degrees of freedom and p-values to those reported by Somerville et al. (2016). I tried multiple variations of the t-test in R, from Welsh t-test and one sided t-tests to one sided Welsh t-tests and none of the tests produced a similar result to those reported by Somerville. In fact, the two sample t-test for equal varience that I ran for both carbon and oxygen data matches most closely with the result reported for the opposite isotopic data. i.e. my oxygen looks most similar to their carbon. I have a number of hypothesis for why these tests may vary: the SPSS test is vastly different to the R t-tests, they are excluding samples from the test and not reporting it, as indicated by the difference in df between our tests, or there was an error in their reporting of the data. That said, the outcome of all tests is the same, there is no significant difference in the means of the samples. I am also not sure about the utility of this test in general, given that the article is looking for differences within a single species as well to test for outliers in the diet of these animals. 
+
+#Step 4 
+"We also evaluated stable isotope ratios between the genera and between individual site locations using a two-way ANOVA (factorial ANOVA ith two factors), testing for the main effects of genus and context, and for the genuscontext interaction."
+
+```{r}
+carbon<-lm(iso$C13ap~iso$Genus*iso$Site)
+anova(carbon)
+```
+```{r}
+oxygen<-lm(iso$O18ap~iso$Genus*iso$Site)
+anova(oxygen)
+```
+
