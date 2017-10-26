@@ -7,6 +7,9 @@ output: html_notebook
 
 ###Introduction to this document, the contents, and the article.
 
+First I modified the files slightly to import with curl, as it refused to bring in the header names with certain symbols in (it worked fine importing from local repo). 
+
+
 To start with a blank slate
 ```{r clear workspace}
 rm(list=ls())
@@ -20,16 +23,20 @@ require(dplyr)
 require(ggplot2)
 require(stringr)
 require(plotrix) #to calculate standard error
+require(qwraps2)
 ```
 First in excel, I deleted two rows of non-table data, i.e. title, and a note, and saved the file (S2_Table) as a CSV in the project directory. Then I read it into R and converted it to a table using dplyr. I trimed white space at beginnings and ends of things where there shouldn't be any, and kept strings as is to avoid issues later down the line. 
 ```{r readfile arch}
-iso_total<-read.csv("S2_Table.csv", header=TRUE, stringsAsFactors = FALSE, strip.white=TRUE)
+library(curl)
+f <- curl("https://raw.githubusercontent.com/mazattack/Article-analysis/master/S2_Table.csv")
+iso_total <- read.csv(f, header = TRUE, stringsAsFactors = FALSE, strip.white=TRUE)
 iso_total<-tbl_df(iso_total)
 head(iso_total)
 str(iso_total)
 ```
 ```{r readfile modern}
-modern<-read.csv("S1_Table.csv", header=TRUE, skip=3, strip.white=TRUE, stringsAsFactors = FALSE) #here I used skip=3 to skip the first 3 rows before the data started
+f <- curl("https://raw.githubusercontent.com/mazattack/Article-analysis/master/S1_Table.csv")
+modern<-read.csv(f, header=TRUE, sep = ",", skip=0, strip.white=TRUE, stringsAsFactors = FALSE) #here I used skip=3 to skip the first 3 rows before the data started
 modern<-tbl_df(modern)
 head(modern)
 str(modern)
