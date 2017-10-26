@@ -1,20 +1,14 @@
-Supporting Information Table 1. Stable isotope data and contextual information for modern leporid specimens.,,,,,,,,,,,,
-Stable carbon isotope values have been corrected for the industrial (Suess) effect.,,,,,,,,,,,,
-,,,,,,,,,,,,
-Lab  #,Cat #,Species,State,Location,Biome,Ecoregion,Elev (m),Collection date (yrs AD),?13C apatite-VPDB (‰),?18O apatite-VSMOW (‰),,
-AS-0655,50078,Sylvilagus floridanus orizabae,Distrito Federal,Tlalpan,Tropical and Subtropical Coniferous Forests,Trans-Mexican Volcanic Belt pine-oak forests,2438,1892,-11.7,26.7,,
-AS-0656,50079,Sylvilagus floridanus orizabae,Distrito Federal,Tlalpan,Tropical and Subtropical Coniferous Forests,Trans-Mexican Volcanic Belt pine-oak forests,2316,1892,-13.6,24.6,,
-AS-0657,51111,Sylvilagus floridanus orizabae,Distrito Federal,Tlalpan,Tropical and Subtropical Coniferous Forests,Trans-Mexican Volcanic Belt pine-oak forests,2316,1892,-12.8,24.7,,
-AS-0660,55592,Sylvilagus floridanus orizabae,Hidalgo,Tulancingo,Deserts and Xeric Shrublands,Meseta Central matorral,2393,1893,-8.4,25.5,,
-AS-0661,55599,Sylvilagus floridanus orizabae,Hidalgo,Tulancingo,Deserts and Xeric Shrublands,Meseta Central matorral,2591,1893,-14.3,23.4,,
-AS-0677,78468,Lepus californicus texianus,Queretaro,Tesquisquiapam,Deserts and Xeric Shrublands,Central Mexican Matorral,1981,1896,-10.2,27.5,,
-AS-0678,81463,Sylvilagus floridanus orizabae,Hidalgo,Zimapan,Tropical and Subtropical Coniferous Forests,Sierra Madre Oriental pine-oak forests,1890,1896,-11.9,27.0,,
-AS-0679,81528,Sylvilagus floridanus orizabae,Hidalgo,Zimapan,Tropical and Subtropical Coniferous Forests,Sierra Madre Oriental pine-oak forests,1890,1896,-10.8,26.5,,
-AS-0705,540914,Sylvilagus floridanus orizabae,Puebla,San Baltazar Tetela,Tropical and Subtropical Coniferous Forests,Trans-Mexican Volcanic Belt pine-oak forests,2075,1966,-14.0,26.1,,
-AS-0706,540914,Sylvilagus floridanus orizabae,Puebla,San Baltazar Tetela,Tropical and Subtropical Coniferous Forests,Trans-Mexican Volcanic Belt pine-oak forests,2075,1966,-12.8,25.6,,
-AS-0707,540915,Sylvilagus floridanus orizabae,Puebla,San Baltazar Tetela,Tropical and Subtropical Coniferous Forests,Trans-Mexican Volcanic Belt pine-oak forests,2075,1966,-13.0,27.9,,
-AS-0708,540915,Sylvilagus floridanus orizabae,Puebla,San Baltazar Tetela,Tropical and Subtropical Coniferous Forests,Trans-Mexican Volcanic Belt pine-oak forests,2075,1966,-12.7,28.2,,
-AS-0709,540916,Sylvilagus floridanus,Puebla,"Malinche Volcano, S Slope",Tropical and Subtropical Coniferous Forests,Trans-Mexican Volcanic Belt pine-oak forests,3454,1966,-14.9,25.3,,
-,,,,,,,,,,,,
-,,,,,,,,,,,,
-,,,,,,,,,,,,
+Lab  #,Cat #,Species,State,Location,Biome,Ecoregion,Elev (m),Collection date (yrs AD),13C apatite-VPDB (ä),18O apatite-VSMOW (ä)
+AS-0655,50078,Sylvilagus floridanus orizabae,Distrito Federal,Tlalpan,Tropical and Subtropical Coniferous Forests,Trans-Mexican Volcanic Belt pine-oak forests,2438,1892,-11.7,26.7
+AS-0656,50079,Sylvilagus floridanus orizabae,Distrito Federal,Tlalpan,Tropical and Subtropical Coniferous Forests,Trans-Mexican Volcanic Belt pine-oak forests,2316,1892,-13.6,24.6
+AS-0657,51111,Sylvilagus floridanus orizabae,Distrito Federal,Tlalpan,Tropical and Subtropical Coniferous Forests,Trans-Mexican Volcanic Belt pine-oak forests,2316,1892,-12.8,24.7
+AS-0660,55592,Sylvilagus floridanus orizabae,Hidalgo,Tulancingo,Deserts and Xeric Shrublands,Meseta Central matorral,2393,1893,-8.4,25.5
+AS-0661,55599,Sylvilagus floridanus orizabae,Hidalgo,Tulancingo,Deserts and Xeric Shrublands,Meseta Central matorral,2591,1893,-14.3,23.4
+AS-0677,78468,Lepus californicus texianus,Queretaro,Tesquisquiapam,Deserts and Xeric Shrublands,Central Mexican Matorral,1981,1896,-10.2,27.5
+AS-0678,81463,Sylvilagus floridanus orizabae,Hidalgo,Zimapan,Tropical and Subtropical Coniferous Forests,Sierra Madre Oriental pine-oak forests,1890,1896,-11.9,27
+AS-0679,81528,Sylvilagus floridanus orizabae,Hidalgo,Zimapan,Tropical and Subtropical Coniferous Forests,Sierra Madre Oriental pine-oak forests,1890,1896,-10.8,26.5
+AS-0705,540914,Sylvilagus floridanus orizabae,Puebla,San Baltazar Tetela,Tropical and Subtropical Coniferous Forests,Trans-Mexican Volcanic Belt pine-oak forests,2075,1966,-14,26.1
+AS-0706,540914,Sylvilagus floridanus orizabae,Puebla,San Baltazar Tetela,Tropical and Subtropical Coniferous Forests,Trans-Mexican Volcanic Belt pine-oak forests,2075,1966,-12.8,25.6
+AS-0707,540915,Sylvilagus floridanus orizabae,Puebla,San Baltazar Tetela,Tropical and Subtropical Coniferous Forests,Trans-Mexican Volcanic Belt pine-oak forests,2075,1966,-13,27.9
+AS-0708,540915,Sylvilagus floridanus orizabae,Puebla,San Baltazar Tetela,Tropical and Subtropical Coniferous Forests,Trans-Mexican Volcanic Belt pine-oak forests,2075,1966,-12.7,28.2
+AS-0709,540916,Sylvilagus floridanus,Puebla,"Malinche Volcano, S Slope",Tropical and Subtropical Coniferous Forests,Trans-Mexican Volcanic Belt pine-oak forests,3454,1966,-14.9,25.3
