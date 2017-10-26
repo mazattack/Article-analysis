@@ -90,3 +90,9 @@ my_sum <-
 summary_table(iso, my_sum[1])
 summary_table(iso, my_sum[2])
 ```
+
+```{r}
+stargazer(iso_total$Element, align = TRUE)
+
+```
+

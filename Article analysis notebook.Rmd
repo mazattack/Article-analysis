@@ -1,7 +1,9 @@
 ---
 title: "Article Analysis Notebook"
-author: Maria C. Codlin
-output: html_notebook
+author: "Maria C. Codlin"
+output:
+  pdf_document: default
+  html_notebook: default
 ---
 ###Table of contents?
 
@@ -97,5 +99,8 @@ mod_sum<-summarize(modern, meanC13=mean(modC13, na.rm=TRUE), meanO18=mean(modO18
 ```
 
 
+```{r}
+stargazer(attitude, header=FALSE)
+```
 
 ##Step 3
