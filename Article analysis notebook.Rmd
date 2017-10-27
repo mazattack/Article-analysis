@@ -1,11 +1,16 @@
 ---
 title: "Article Analysis Notebook"
-author: Maria C. Codlin
-output: html_notebook
+author: "Maria C. Codlin"
+output:
+  pdf_document: default
+  html_notebook: default
 ---
 ###Table of contents?
 
 ###Introduction to this document, the contents, and the article.
+
+First I modified the files slightly to import with curl, as it refused to bring in the header names with certain symbols in (it worked fine importing from local repo). 
+
 
 To start with a blank slate
 ```{r clear workspace}
@@ -20,18 +25,25 @@ require(dplyr)
 require(ggplot2)
 require(stringr)
 require(plotrix) #to calculate standard error
-require(qwraps2)#for summary table
+require(qwraps2)
 require(tidyr)
 ```
 First in excel, I deleted two rows of non-table data, i.e. title, and a note, and saved the file (S2_Table) as a CSV in the project directory. Then I read it into R and converted it to a table using dplyr. I trimed white space at beginnings and ends of things where there shouldn't be any, and kept strings as is to avoid issues later down the line. 
 ```{r readfile arch}
-iso_total<-read.csv("S2_Table.csv", header=TRUE, stringsAsFactors = FALSE, strip.white=TRUE, na.strings = c("", "NA")) # there were some rows of blanks being included so I used this last bit to convert them to NA
+library(curl)
+f <- curl("https://raw.githubusercontent.com/mazattack/Article-analysis/master/S2_Table.csv")
+iso_total <- read.csv(f, header = TRUE, stringsAsFactors = FALSE, strip.white=TRUE)
+```
+
 iso_total<-tbl_df(iso_total)
 head(iso_total)
 str(iso_total)
 ```
 ```{r readfile modern}
-modern<-read.csv("S1_Table.csv", header=TRUE, skip=3, strip.white=TRUE, stringsAsFactors = FALSE, na.strings = c("", "NA")) #here I used skip=3 to skip the first 3 rows before the data started
+
+f <- curl("https://raw.githubusercontent.com/mazattack/Article-analysis/master/S1_Table.csv")
+modern<-read.csv(f, header=TRUE, sep = ",", skip=0, strip.white=TRUE, stringsAsFactors = FALSE) #here I used skip=3 to skip the first 3 rows before the data started
+
 modern<-tbl_df(modern)
 head(modern)
 str(modern)
@@ -166,6 +178,9 @@ Both of these tests returned different test statistics, degrees of freedom and p
 #Step 4 
 "We also evaluated stable isotope ratios between the genera and between individual site locations using a two-way ANOVA (factorial ANOVA ith two factors), testing for the main effects of genus and context, and for the genuscontext interaction."
 
+```{r}
+stargazer(attitude, header=FALSE)
+```
 ```{r}
 carbon<-lm(iso$C13ap~iso$Genus*iso$Site)
 anova(carbon)

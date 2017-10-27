@@ -92,6 +92,11 @@ summary_table(iso, my_sum[2])
 ```
 
 
+```{r}
+stargazer(iso_total$Element, align = TRUE)
+
+```
+
 
 ```{r summary}
 sum(!is.na(iso$C13ap))#the ! means it will return the number that is not NA
