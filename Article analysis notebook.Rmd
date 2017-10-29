@@ -2,8 +2,9 @@
 title: "Article Analysis Notebook"
 author: "Maria C. Codlin"
 output:
-  pdf_document: default
   html_notebook: default
+  html_document: default
+  pdf_document: default
 ---
 ###Table of contents?
 
@@ -27,6 +28,8 @@ require(stringr)
 require(plotrix) #to calculate standard error
 require(qwraps2)
 require(tidyr)
+require(stargazer)
+require(knitr)
 ```
 First in excel, I deleted two rows of non-table data, i.e. title, and a note, and saved the file (S2_Table) as a CSV in the project directory. Then I read it into R and converted it to a table using dplyr. I trimed white space at beginnings and ends of things where there shouldn't be any, and kept strings as is to avoid issues later down the line. 
 ```{r readfile arch}
@@ -34,11 +37,12 @@ library(curl)
 f <- curl("https://raw.githubusercontent.com/mazattack/Article-analysis/master/S2_Table.csv")
 iso_total <- read.csv(f, header = TRUE, stringsAsFactors = FALSE, strip.white=TRUE)
 ```
-
+```{r}
 iso_total<-tbl_df(iso_total)
 head(iso_total)
 str(iso_total)
 ```
+
 ```{r readfile modern}
 
 f <- curl("https://raw.githubusercontent.com/mazattack/Article-analysis/master/S1_Table.csv")
@@ -114,7 +118,7 @@ a_hist+geom_histogram(bins= 15)+ facet_wrap(~Genus, scales="free")
 ```
 Sylvilagus looks approximately normal while Lepus it is hard to tell. Next I compare using qqplots.
 *QQplots*
-```{r qqplots}
+```{r qqplots carbon}
 LC<-iso$C13ap[iso$Genus=="Lepus"]
 SC<-iso$C13ap[iso$Genus=="Sylvilagus"]
 qqnorm(LC,xlab="Theoretical",main="Lepus")
@@ -122,8 +126,11 @@ qqnorm(LC,xlab="Theoretical",main="Lepus")
   
   qqnorm(SC,xlab="Theoretical",main="Sylvilagus")
   qqline(SC)
+  
+  shapiro.test(LC)
+  shapiro.test(SC)
 ```
-Again, Lepus fits this "OK" while Sylvilagus looks pretty good. 
+Again, Lepus fits this "OK" while Sylvilagus looks pretty good. Both samples pass the Shapiro-Wilk test for normality. 
 *Test of equal variance*
 ```{r}
 var.test(LC, SC)
@@ -140,7 +147,7 @@ a_hist+geom_histogram(bins=15)+ facet_wrap(~Genus, scales="free")
 ```
 Both look like they could be approximately normal
 *QQplots*
-```{r qqplots}
+```{r qqplots Oxygen}
 LO<-iso$O18ap[iso$Genus=="Lepus"]
 SO<-iso$O18ap[iso$Genus=="Sylvilagus"]
 qqnorm(LO,xlab="Theoretical",main="Lepus")
@@ -173,20 +180,84 @@ Oxygen apatite t-sample t-test comparing Lepus and Sylvilagus: t = -0.83133, df 
 δ13Capatite values (t[110] = -0.806, p = 0.422) 
 δ18Oapatite values (t[110] = 0.428, p = 0.669). 
 
-Both of these tests returned different test statistics, degrees of freedom and p-values to those reported by Somerville et al. (2016). I tried multiple variations of the t-test in R, from Welsh t-test and one sided t-tests to one sided Welsh t-tests and none of the tests produced a similar result to those reported by Somerville. In fact, the two sample t-test for equal varience that I ran for both carbon and oxygen data matches most closely with the result reported for the opposite isotopic data. i.e. my oxygen looks most similar to their carbon. I have a number of hypothesis for why these tests may vary: the SPSS test is vastly different to the R t-tests, they are excluding samples from the test and not reporting it, as indicated by the difference in df between our tests, or there was an error in their reporting of the data. That said, the outcome of all tests is the same, there is no significant difference in the means of the samples. I am also not sure about the utility of this test in general, given that the article is looking for differences within a single species as well to test for outliers in the diet of these animals. 
+Both of these tests returned different test statistics, degrees of freedom and p-values to those reported by Somerville et al. (2016). I tried multiple variations of the t-test in R, from Welsh t-test and one sided t-tests to one sided Welsh t-tests and none of the tests produced a similar result to those reported by Somerville. In fact, the two sample t-test for equal varience that I ran for both carbon and oxygen data matches most closely with the result reported for the opposite isotopic data. i.e. my oxygen looks most similar to their carbon. I have a number of hypothesis for why these tests may vary: the SPSS test is vastly different to the R t-tests, they are excluding samples from the test and not reporting it, as indicated by the difference in df between our tests, or there was an error in their reporting of the data. That said, the outcome of all tests is the same, there is no significant difference in the means of the samples. I later realised that the data they provide is slightly differerent from the results presented and this is likely the reason for the differences observed in this test. This is most clearly observed in the table below and comparison to their table 2. 
 
 #Step 4 
-"We also evaluated stable isotope ratios between the genera and between individual site locations using a two-way ANOVA (factorial ANOVA ith two factors), testing for the main effects of genus and context, and for the genuscontext interaction."
+"We also evaluated stable isotope ratios between the genera and between individual site locations using a two-way ANOVA (factorial ANOVA with two factors), testing for the main effects of genus and context, and for the genuscontext interaction."
+
+
+*Summary table (Compare Table 2)*
+
+```{r create genus column in modern}
+Genus<- as.factor(modern$Species)
+modern<-cbind(modern, Genus)
+levels(modern$Genus)[levels(modern$Genus)=="Lepus californicus texianus"]<-"Lepus"
+levels(modern$Genus)[levels(modern$Genus)=="Sylvilagus floridanus"]<-"Sylvilagus"
+levels(modern$Genus)[levels(modern$Genus)=="Sylvilagus floridanus orizabae"]<-"Sylvilagus"
+levels(modern$Genus)    
+```
+
+
+```{r merge modern and iso datasets}
+new<-select(iso, lab_n, Site, Phase, Genus, C13ap, O18ap)
+new2<-select(modern, lab_n=Lab_num, Site=State, Phase=Collection.date..yrs.AD., Genus, C13ap=modC13, O18ap=modO18)%>%mutate(Site="modern")
+iso2<-rbind(filter(new,(!(is.na(C13ap)))), new2)
+iso2
+```
+```{r constructing the summary table}
+iso2$Genus <-as.factor(iso2$Genus)
+iso2_g <- group_by(iso2, Site, Genus)
+sum_tot<- summarize(iso2_g, length(C13ap), mean(C13ap), sd(C13ap), length(O18ap), mean(O18ap), sd(O18ap))
+
+tot_tot<-iso2%>%
+  group_by(Genus)%>%
+  summarize(length(C13ap), mean(C13ap), sd(C13ap), length(O18ap), mean(O18ap), sd(O18ap))
+tot_tot<-mutate(tot_tot, Site="Total")
+tot<-rbind.data.frame(sum_tot, tot_tot)
+tot
+```
+Note the differences across these summary statistics compared to the table provided in the article (Table 2). This reflects a difference in the data from the article compared to what they provided. I checked this in excel to confirm. 
 
 ```{r}
-stargazer(attitude, header=FALSE)
-```
-```{r}
 carbon<-lm(iso$C13ap~iso$Genus*iso$Site)
-anova(carbon)
+anova(carbon) #not sure why but moon pyramid is missing from all these ANOVA
 ```
 ```{r}
 oxygen<-lm(iso$O18ap~iso$Genus*iso$Site)
-anova(oxygen)
+summary(oxygen)
+```
+My two way Anova summaries match the conclusions they derived in the article. That Genus had no significant effect on either δ13C or δO18 apatite ratios. However there is a significant effect of Site location on these variables. 
+
+**One way ANOVA tests**
+```{r}
+carbon<-lm(iso$C13ap~iso$Site)
+summary(carbon)
 ```
 
+```{r}
+oxygen<-lm(iso$O18ap~iso$Site)
+summary(oxygen)
+```
+
+```{r}
+
+```
+
+
+
+, the main effect for genus was not significant (F[1,102] =
+3.361), p = 0.070), but the main effect of site context was significant (F[4,102] = 5.365,
+p = 0.001). Importantly, the interaction between genus and site was not significant for δ13Capatite
+(F[4,102] = 0.590, p<0.670) or for δ18Oapatite (F[4,102] = 0.834, p<0.507). However, Lepus and
+Sylvilagus values are notably different from each other at the Cuevas site, but the small sample
+size from this context makes any interpretations regarding this observation speculative. Subsequent
+contextual comparisons thus combine Sylvilagus and Lepus specimens
+
+*For δ13Capatite, the main effect for genus was not significant (F[1,102] =
+3.361), p = 0.070), but the main effect of site context was significant (F[4,102] = 5.365,
+p = 0.001). Importantly, the interaction between genus and site was not significant for δ13Capatite
+(F[4,102] = 0.590, p<0.670) or for δ18Oapatite (F[4,102] = 0.834, p<0.507). 
+However, Lepus and
+Sylvilagus values are notably different from each other at the Cuevas site, but the small sample
+size from this context makes any interpretations regarding this observation speculative. Subsequent
+contextual comparisons thus combine Sylvilagus and Lepus specimens*

@@ -118,3 +118,58 @@ boxplot(LC, ylim = c(), main = "dC13 ap", xlab = "Lepus")
 boxplot(SO, ylim = c(), main = "dO18 ap", xlab = "Sylvilagus")
 boxplot(LO, ylim = c(), main = "dO18 ap", xlab = "Lepus")
 ```
+
+
+*Working out the summary table*
+```{r group by genus}
+modern_group<-modern %>%
+  select(modC13:Genus)%>%
+  group_by(Genus)
+```
+
+```{R}
+summ<-carbon_group%>%
+  summarize(length(C13ap), mean(C13ap), sd(C13ap))
+summ2<-oxygen_group %>%
+  summarize(length(O18ap), mean(O18ap), sd(O18ap))
+summ3<-modern_group %>%
+  summarize(length(modC13), mean(modC13), sd(modC13), length(modO18), mean(modO18), sd(modO18))
+M<-merge(summ,summ2)
+M[,3:8]<-round(M[3:8], 2)
+M
+summ3
+sum(M$`length(C13ap)`)
+```
+```{r}
+carbon_group<-iso %>%
+  select(lab_n:Genus, C13ap)%>%
+  filter(!(is.na(C13ap)))%>%
+  group_by(Site, Genus)
+oxygen_group<-iso %>%
+  select(lab_n:Genus, O18ap)%>%
+  filter(!(is.na(O18ap)))%>%
+  group_by(Site, Genus)
+
+carbon_group
+oxygen_group
+```
+
+
+
+
+```{r results='asis'}
+stargazer(attitude, header=FALSE, type='html')
+```
+
+ANOVA PRACTICE
+
+```{r}
+carbon<-lm(iso$C13ap~iso$Genus*iso$Site)
+anova(carbon)
+```
+```{r}
+oxygen<-lm(iso$O18ap~iso$Genus*iso$Site)
+anova(oxygen)
+```
+
+
