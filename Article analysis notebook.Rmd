@@ -5,8 +5,30 @@ output:
   html_notebook: default
   html_document: default
   pdf_document: default
+    toc:true
+	  toc_depth:4
+	  toc_float:true
+
 ---
 ###Table of contents?
+
+#Introduction
+In this document, I outline the reanalyis of Somerville et al. (2016), who examine the evidence for captive management of leproids at Teotihuacan, one of the earliest and largest urban centers in the Americas. Somerville et al. (2016) analysed the carbon and oxygen stable isotopes from the bone apatite of archaeological specimens from two genera of lepoids, Lepus (hares), and Sylvilagus (cottontails). Carbon is used as a proxy for human impact on the diet of these animals: higher δ13C apatite ratios imply an larger component of the diet was made up by human cultivated C4 or CAM plants such as maize. They incorperate the stable carbon isotope analysis with stable oxygen isotope analysis, as δO18 apatite ratios can be used in this context as a proxy for local humidity, providing a measure of control over environmental changes that might have influence baseline signatures of δ13C. 
+
+Their dataset (S2) contains the carbon and isotope ratios from five different parts of the city, some of which overlap slightly in period of occupation. The Moon Pyramid, Teopancazco and Oztoyahualco sites are the three that cover the classic period (150BC-550AD) occupation of Teotihuacan, and overlap somewhat in their occupation ranges. Puerta 5 and Cuevas (here Tunels y Cuevas), refer respectively to the epi-classic (600-1150AD) and post-classic (Aztec, 1150-1500AD) periods of occupation at the site. They also analysed a sample of "modern" (1892-1966AD) comparative specimens from the Basin of Mexico (S1), although these were not taken from Teotihuacan valley, they should be fairly representative of the recent agricultural landscape in the area.
+
+As previous research had indicated the neighborhood of Ozotoyahualco might have specialised in raising cottontail rabbits, Somerville et al. (2016) hypothesised that this site would have a higher δ13C than other parts of the city. Similarly, due to previous research on urban provisioning and the declining prevalence of deer in the region during the classic period, they hypothesised that management of small animals such as leproids would become more important over time, and that this should be associated with an increase in δ13C across the sites during Teotihuacan's classic period occupation. Finally, due to certain biological and behavioural differences between Lepus and Sylvilagus, the authors hypotheses that while both may have been managed by humans, Sylvilagus would be more suitable to captive management in an urban center, and thus would likely have a higher δ13C than Lepus. 
+
+###Outline of their project and my replication 
+
+In their analysis, they perform a variety of descriptive and interpretive analyses, as well as vizualisation of the data. I plan to replicate all of their tests. 
+
+1. Load and clean data to remove outliers and any samples that failed their quality check
+2. Test for statistical differences between genera by calculating simple descriptive statistics and analysis with students T-test. 
+3. Two analysis of variance tests to evaluate the effect of genus and site on δ13C and δ18O as well as potential for interaction effects between genus and site.
+4. After genus was found to have no effect, the analysis focused on site. They performed a one-way ANOVA and a post-hoc Tukey test on each of δ13C and δ18O to assess which sites had an effect on the two variables. One site was found to have a sigificant effect on δ13C, so a Mann-Whitney-U (two sample Wilcox rank sum test) test was employed to compare the means of that one site to the remainder of the sample. 
+5. The final step was visualising the data in a scatterplot of the means and standard deviation of each site for the two main variables (δ13C and δ18O) and two boxplots grouped by site. In this step they interpret ideas about how δ13C increased over time at Teotihuacan, and use Pearson's test for correlation between the two variables to rule out environmental causes for the interpretations about δ13C.
+
 
 ###Introduction to this document, the contents, and the article.
 
@@ -53,7 +75,7 @@ head(modern)
 str(modern)
 ```
 
-To make life easier, I changed the names of two key variables. First I tried 18O and 13C as the variable names, but it threw me an error, I think by starting with a number. 
+To make life easier, I changed the names of two key variables because they were long and involved weird characters. First I tried 18O and 13C as the variable names, but it threw me an error, I think by starting with a number. 
 ```{r rename}
 names(iso_total)[12]<-"C13ap" #I used names(iso_total) to get the position of these for renaming
 names(iso_total)[13]<-"O18ap"
@@ -65,9 +87,9 @@ names(modern)[11]<-"modO18"
 
 #Step 2: Remove of samples potentially affected by diagenisis and summarize data to check against means presented in the article 
 
-In this article, they tested a random sample (n=101) of bone for potential post-depositional alteration to the mineral structure.Using FTIR, they tested the carbonate to phospate ratios (C/P) and infrared splitting factor (IR-SF) using FTIR and removed samples which fell outside of the expected ranges of 0.1 and 0.5 for C/P and 2.0 and 4.0 for IR-SF. The samples that they removed are marked in grey in the supplimentary data. 
+In this article, they tested a random sample (n=101) of bone for potential post-depositional alteration to the mineral structure. Using FTIR, they tested the carbonate to phospate ratios (C/P) and infrared splitting factor (IR-SF) using FTIR and removed samples which fell outside of the expected ranges of 0.1 and 0.5 for C/P and 2.0 and 4.0 for IR-SF. The samples that they removed are marked in grey in the supplimentary data. 
 
-Here, I used the filter function to select only those rows where C/P and IR-SF fell within the expected ranges, and saved this as a new dataset "iso". I also needed to make sure the rows with NA values were still included, since only a random sample was analysed. I did this using the | notation which functions like "OR". Since the FTIR analysis returned both C/P and IR-SF values, I only need to include one is.na function here. I also excluded an outlier with an extremely low delta O18 that they excluded by converting this number to NA, as the samples delta C13 value was still incorperated in the analysis.
+Here, I used the filter function to select only those rows where C/P and IR-SF fell within the expected ranges, and saved this as a new dataset "iso". I also needed to make sure the rows with NA values were still included, since only a random sample was analysed. I did this using the | notation which functions like "OR". Since the FTIR analysis returned both C/P and IR-SF values, I only need to include one is.na function here. I also excluded an outlier with an extremely low δO18 that they excluded by converting this number to NA, as the sample's δ13C value was still incorperated in the analysis.
 ```{r filter out diagenisis}
 #to filter out only Lepus and Sylvilagus genus, I first needed to define the column as a factor
 iso_total$Genus<-as.factor(iso_total$Genus)
@@ -75,9 +97,12 @@ iso<-filter(iso_total, (Genus=="Lepus" | Genus=="Sylvilagus") & between (C.P, 0.
 iso$O18ap[iso$O18ap==11.9]<-NA #couldn't figure out how to get this to work with dplyr or chaining
 iso            
 ```
+There were a couple rows at the end of the dataset with no data in them so this excluded those from the dataset too. 
 ```{r}
 iso<-filter(iso, !(is.na(iso$Genus))) #removes empty rows
 ```
+
+
 
 **Descriptive statistics from the article**
 Archaological specimens: δ13Capatite = -7.8 ± 2.4‰(N = 114, 1 S.D.) and δ18Oapatite = 26.0‰(N = 113, 1 S.D.). 
@@ -108,27 +133,26 @@ my_sum
 
 #Step 3 "Independent samples t-tests were conducted to compare mean stable isotope ratios of the two genera (Lepus and Sylvilagus) across the archaeological bone sample as a whole. No significant difference between the genera were found in δ13Capatite values (t[110] = -0.806, p = 0.422) or δ18Oapatite values (t[110] = 0.428, p = 0.669)."
 
-First, I will check that the data fits a normal distribution by comparing it to the qnorm and qqline plots as well as histogram.
+First, I check that the data fits a normal distribution by viewing their histogram,  qnorm and qqline plots as well as performing the shapiro test for normality. 
 
 **Carbon Apatite Results**
 *Histogram*
 ```{r}
 a_hist<-ggplot(iso, aes(C13ap))
-a_hist+geom_histogram(bins= 15)+ facet_wrap(~Genus, scales="free")
+a_hist+geom_histogram(bins= 15)+ facet_wrap(~Genus, scales="free") #I couldn't figure out how to get rid of the blank chart at the start
 ```
 Sylvilagus looks approximately normal while Lepus it is hard to tell. Next I compare using qqplots.
 *QQplots*
 ```{r qqplots carbon}
-LC<-iso$C13ap[iso$Genus=="Lepus"]
-SC<-iso$C13ap[iso$Genus=="Sylvilagus"]
+
 qqnorm(LC,xlab="Theoretical",main="Lepus")
   qqline(LC)
   
   qqnorm(SC,xlab="Theoretical",main="Sylvilagus")
   qqline(SC)
   
-  shapiro.test(LC)
-  shapiro.test(SC)
+  shapiro.test(LC) #Lepus
+  shapiro.test(SC) #Sylvilagus
 ```
 Again, Lepus fits this "OK" while Sylvilagus looks pretty good. Both samples pass the Shapiro-Wilk test for normality. 
 *Test of equal variance*
@@ -148,8 +172,7 @@ a_hist+geom_histogram(bins=15)+ facet_wrap(~Genus, scales="free")
 Both look like they could be approximately normal
 *QQplots*
 ```{r qqplots Oxygen}
-LO<-iso$O18ap[iso$Genus=="Lepus"]
-SO<-iso$O18ap[iso$Genus=="Sylvilagus"]
+
 qqnorm(LO,xlab="Theoretical",main="Lepus")
   qqline(LO)
   
@@ -180,7 +203,11 @@ Oxygen apatite t-sample t-test comparing Lepus and Sylvilagus: t = -0.83133, df 
 δ13Capatite values (t[110] = -0.806, p = 0.422) 
 δ18Oapatite values (t[110] = 0.428, p = 0.669). 
 
-Both of these tests returned different test statistics, degrees of freedom and p-values to those reported by Somerville et al. (2016). I tried multiple variations of the t-test in R, from Welsh t-test and one sided t-tests to one sided Welsh t-tests and none of the tests produced a similar result to those reported by Somerville. In fact, the two sample t-test for equal varience that I ran for both carbon and oxygen data matches most closely with the result reported for the opposite isotopic data. i.e. my oxygen looks most similar to their carbon. I have a number of hypothesis for why these tests may vary: the SPSS test is vastly different to the R t-tests, they are excluding samples from the test and not reporting it, as indicated by the difference in df between our tests, or there was an error in their reporting of the data. That said, the outcome of all tests is the same, there is no significant difference in the means of the samples. I later realised that the data they provide is slightly differerent from the results presented and this is likely the reason for the differences observed in this test. This is most clearly observed in the table below and comparison to their table 2. 
+Both of these tests returned different test statistics, degrees of freedom and p-values to those reported by Somerville et al. (2016). I tried multiple variations of the t-test in R, from Welsh t-test and one sided t-tests to one sided Welsh t-tests and none of the tests produced a similar result to those reported by Somerville. It later became clear there was an error in either their reported data or supplimentary data - see step 3 for explanation. That said, the outcome of all tests is the same, there is no significant difference in the means of the samples. 
+
+I also conducted tests of normality to assess the suitability of students T-test to these data. 
+
+
 
 #Step 4 
 "We also evaluated stable isotope ratios between the genera and between individual site locations using a two-way ANOVA (factorial ANOVA with two factors), testing for the main effects of genus and context, and for the genuscontext interaction."
@@ -207,7 +234,8 @@ iso2
 ```{r constructing the summary table}
 iso2$Genus <-as.factor(iso2$Genus)
 iso2_g <- group_by(iso2, Site, Genus)
-sum_tot<- summarize(iso2_g, length(C13ap), mean(C13ap), sd(C13ap), length(O18ap), mean(O18ap), sd(O18ap))
+sum_tot<- iso2_g%>%
+  summarize(length(C13ap), mean(C13ap), sd(C13ap), length(O18ap), mean(O18ap), sd(O18ap))
 
 tot_tot<-iso2%>%
   group_by(Genus)%>%
@@ -220,7 +248,8 @@ Note the differences across these summary statistics compared to the table provi
 
 ```{r}
 carbon<-lm(iso$C13ap~iso$Genus*iso$Site)
-anova(carbon) #not sure why but moon pyramid is missing from all these ANOVA
+anova(carbon)#not sure why but moon pyramid is missing from all these ANOVA
+plot(carbon$residuals)
 ```
 ```{r}
 oxygen<-lm(iso$O18ap~iso$Genus*iso$Site)
@@ -230,17 +259,50 @@ My two way Anova summaries match the conclusions they derived in the article. Th
 
 **One way ANOVA tests**
 ```{r}
-carbon<-lm(iso$C13ap~iso$Site)
-summary(carbon)
+carbon2<-lm(iso$C13ap~iso$Site)
+anova(carbon2)
+m <- aov(iso$C13ap~iso$Site)
+summary(m)
+posthoc <- TukeyHSD(m, "iso$Site", conf.level = 0.95)
+posthoc 
+
+
+```
+```{r Mann-Whitney U carbon}
+group1<-(iso2) %>%
+  filter(Site!="modern", Site!="Oztoyahualco") %>%
+  select(C13ap)
+group2<-(iso2) %>%
+  filter(Site=="Oztoyahualco") %>%
+  select(C13ap)
+group1<-as.numeric(unlist(group1))
+group2<-as.numeric(unlist(group2))
+wilcox.test(group1, group2)
+```
+```{r Mann-Whitney U oxygen}
+group1<-(iso2) %>%
+  filter(Site!="modern", Site!="Oztoyahualco") %>%
+  select(O18ap)
+group2<-(iso2) %>%
+  filter(Site=="Oztoyahualco") %>%
+  select(O18ap)
+group1<-as.numeric(unlist(group1))
+group2<-as.numeric(unlist(group2))
+wilcox.test(group1, group2)
+```
+```{r}
+
 ```
 
 ```{r}
-oxygen<-lm(iso$O18ap~iso$Site)
-summary(oxygen)
+
 ```
 
 ```{r}
-
+m <- aov(iso$O18ap~iso$Site)
+summary(m)
+posthoc <- TukeyHSD(m, "iso$Site", conf.level = 0.95)
+posthoc  
 ```
 
 
@@ -261,3 +323,255 @@ However, Lepus and
 Sylvilagus values are notably different from each other at the Cuevas site, but the small sample
 size from this context makes any interpretations regarding this observation speculative. Subsequent
 contextual comparisons thus combine Sylvilagus and Lepus specimens*
+
+
+#Visualing the data in graphs
+
+gm <- iso2 %>% 
+        group_by(Site) %>% 
+        summarise(mean_C13ap = mean(C13ap),
+                  mean_O18ap  = mean(O18ap, na.rm=T),
+                  C13SE=sqrt(var(C13ap))/length(C13ap),
+                  O18SE=sqrt(var(O18ap, na.rm=T))/length(O18ap))
+
+```{r relabel levels of Site, note that runing this twice will erase the data}
+iso2$Site = factor(iso2$Site, c("Moon Pyramid", "Teopancazco", "Oztoyahualco", "Puerta 5", "Túneles y Cuevas", "modern"), labels=c("Moon Pyramid (150 BC-AD 450)", "Teopancazco (AD 200-550)", "Oztoyahualco (AD 350-550)", "Puerta 5 (AD 600-1150)", "Túneles y Cuevas (AD 1150-1500)", "modern (AD 1892-1966)"))
+```
+```{r carbon v oxygen scatterplot}
+gm <- iso2 %>% 
+        group_by(Site) %>% 
+        summarise(mean_C13ap = mean(C13ap),
+                  mean_O18ap  = mean(O18ap, na.rm=T),
+                  C13SD=sd(C13ap),
+                  O18SD=sd(O18ap, na.rm=T))
+gm
+
+g<-ggplot(gm, aes(x=mean_C13ap, y=mean_O18ap, shape = Site))
+g+geom_point(data=gm, size=4)+ xlim(-16, -1) +ylim(21, 31)+
+      geom_errorbarh(data = gm,aes(xmin = mean_C13ap - C13SD,xmax = mean_C13ap + C13SD,y = mean_O18ap)) + 
+    geom_errorbar(data = gm,aes(ymin = mean_O18ap - O18SD,ymax = mean_O18ap + O18SD,x = mean_C13ap)) +
+  labs(x="δ13C apatite-VPDB (‰)", y="δ18O apatite-VSMOW (‰)") +
+  annotate(geom = "text", x = -12, y = 22, label = "note error bars are SD")
+  
+
+```
+
+```{r carbon boxplot}
+
+g<-ggplot(iso2, aes(x=Site, y=C13ap))
+g<-g+geom_boxplot(aes(fill=Genus))+
+  ylim(-16, -2) +
+  labs(x="" ,y="δ13C apatite-VPDB (‰)") +
+  scale_color_manual(values=c("black", "black"))+
+  scale_fill_manual(values=c( "grey90", "grey45"))+
+  theme(axis.text.x = element_text(size=8, angle=45, hjust = 1))+
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 15))+
+   coord_fixed(.45)+
+    geom_vline(aes(xintercept = 3.5), linetype=2)
+g
+
+ggsave(filename = "carbon_box.png", g,
+       width = 8, height = 9, dpi = 300, units = "in", device='png')
+```
+
+
+
+
+```{r oxygen boxplot}
+
+g<-ggplot(iso2, aes(x=Site, y=O18ap))
+g<-g+geom_boxplot(aes(fill=Genus))+
+  ylim(18, 32) +
+  labs(x="" ,y="δ18O apatite-VSMOW (‰)") +
+  scale_color_manual(values=c("black", "black"))+
+  scale_fill_manual(values=c( "grey90", "grey45"))+
+  theme(axis.text.x = element_text(size=8, angle=45, hjust = 1))+
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 15))+
+   coord_fixed(.45)+
+   geom_vline(aes(xintercept = 3.5), linetype=2)
+g
+
+ggsave(filename = "oxygen_box.png", g,
+       width = 8, height = 9, dpi = 300, units = "in", device='png')
+```
+
+```{r}
+library(Hmisc)
+cor.test(x=iso2$C13ap, y=iso2$O18ap, method= "pearson")
+```
+
+---
+title: "Article analysis"
+author: "Maria C. Codlin"
+date: "September 21, 2017"
+output: html_document
+---
+###Table of contents?
+
+###Introduction to this document, the contents, and the article.
+
+
+Before I run any parts of the analysis, I load all the packages I use in this file
+```{r load libraries}
+require(dplyr)
+require(stringr)
+require(ggplot2)
+require(qwraps2)
+```
+First in excel, I deleted two rows of non-table data, i.e. title, and a note, and saved the file (S2_Table) as a CSV in the project directory. Then I read it into R and converted it to a table using dplyr
+```{r readfile}
+iso<-read.csv("S2_Table.csv")
+iso<-tbl_df(iso_total)
+head(iso_total)
+```
+
+To make life easier, I changed the names of two key variables. First I tried 18O and 13C as the variable names, but it threw me an error, I think by starting with a number. 
+```{r }
+names(iso)[12]<-"C13ap"
+names(iso)[13]<-"O18ap"
+names(iso)
+```
+This is my first attempt at a box plot! I figured it out eventually
+```{r }
+g<-ggplot(iso, aes(x=Site, y=O18ap))
+g+geom_boxplot(aes(color=Genus))+labs(x="" ,y="δ18O apatite-VSMOW (‰)")
+```
+Continuation of cleaning. Some samples were removed from analysis due to the likely hood of contamination or diagenesis. " Five apatite samples with C/P ratios <0.10, three apatite samples with IR-SF values < 2.00, and five apatite samples with IR-SF values >4.00 were excluded from subsequent discussions"
+
+```{r }
+iso<-filter(iso_total, between (C.P, 0.1, 0.5)&between (IR.SF, 2.0, 4.0))
+iso            
+```
+
+###Outline of what needs to be done. 
+Datasets: 1. Isotopes of modern specimens. 2. Isotopes of ancient specimens.
+
+
+
+
+##Modification of dataset prior to analysis
+- calibration of carbon isotope ratios due to atmospheric changes in the past 130 years to make the modern specimens in the dataset comparable to the ancient ones.**It is not clear whether this is incorperated in the supplimental data or not**  
+
+
+
+##Statistical analyses:
+- Parametric tests: Independent samples t-test (groups of two) and ANOVA (and two or more)
+-Non parametic: Mann-Whitney U test (for Oztoyahualco and pooled other areas) due to very different sample sizes.
+-To see if carbon and oxygen isotopes covary, bivariate Pearson's correlation was used. Sig assumed at a=0.05.
+
+##Mixing model to approximate percentage of C4 and CAM plants in diet:
+%C4CAM= ((delta_13_C_apatite - 9.7)-(-26.1))/14.1
+Due to the level of uncertainties, these percentages are used to reflect the relative contrabutions of C4 and CAM plants between individuals rather than as absolute data. 
+
+
+```{r summary}
+summarise(iso)
+
+```
+
+
+
+*Because of errors later on, I found I also needed to trim the space at the end of some of the Genus names.* 
+```{r trim white space}
+iso_total$Genus<-str_trim(iso_total$Genus)
+iso_total$Genus<-as.factor(iso_total$Genus)
+levels(iso_total$Genus)
+```
+
+
+```{r sum_table}
+my_sum <- 
+  list("Archaeological samples" = 
+         list("δC13 mean (sd)" = ~ mean_sd(C13ap),
+              "δO18 mean (sd)" = ~ mean_sd(O18ap)),
+       "Modern samples" = 
+         list("δC13 mean (sd)" = ~ mean_sd(modern$modC13),
+              "δO18 mean (sd)" = ~ mean_sd(modern$modO18))
+              )
+              
+summary_table(iso, my_sum[1])
+summary_table(iso, my_sum[2])
+```
+
+
+```{r}
+stargazer(iso_total$Element, align = TRUE)
+
+```
+
+
+```{r summary}
+sum(!is.na(iso$C13ap))#the ! means it will return the number that is not NA
+sum(!is.na(iso$O18ap))
+arch_sum<-summarize(iso, meanC13=mean(C13ap, na.rm=TRUE), meanO18=mean(O18ap, na.rm=TRUE), sdC13=sd(C13ap, na.rm=TRUE), sdO18=sd(O18ap, na.rm=TRUE))%>%print()
+
+mod_sum<-summarize(modern, meanC13=mean(modC13, na.rm=TRUE), meanO18=mean(modO18, na.rm=TRUE), seC13=std.error(modC13, na.rm=TRUE), sdO18=sd(modO18, na.rm=TRUE))%>%print()
+
+
+
+```
+
+
+
+These results also differ from what was presented. So I will test to see if they removed outliers prior to t-test. I will use a box plot to identify outliers
+```{r}
+boxplot(SC, ylim = c(), main = "dC13 ap", xlab = "Sylvilagus")
+boxplot(LC, ylim = c(), main = "dC13 ap", xlab = "Lepus")
+boxplot(SO, ylim = c(), main = "dO18 ap", xlab = "Sylvilagus")
+boxplot(LO, ylim = c(), main = "dO18 ap", xlab = "Lepus")
+```
+
+
+*Working out the summary table*
+```{r group by genus}
+modern_group<-modern %>%
+  select(modC13:Genus)%>%
+  group_by(Genus)
+```
+
+```{R}
+summ<-carbon_group%>%
+  summarize(length(C13ap), mean(C13ap), sd(C13ap))
+summ2<-oxygen_group %>%
+  summarize(length(O18ap), mean(O18ap), sd(O18ap))
+summ3<-modern_group %>%
+  summarize(length(modC13), mean(modC13), sd(modC13), length(modO18), mean(modO18), sd(modO18))
+M<-merge(summ,summ2)
+M[,3:8]<-round(M[3:8], 2)
+M
+summ3
+sum(M$`length(C13ap)`)
+```
+```{r}
+carbon_group<-iso %>%
+  select(lab_n:Genus, C13ap)%>%
+  filter(!(is.na(C13ap)))%>%
+  group_by(Site, Genus)
+oxygen_group<-iso %>%
+  select(lab_n:Genus, O18ap)%>%
+  filter(!(is.na(O18ap)))%>%
+  group_by(Site, Genus)
+
+carbon_group
+oxygen_group
+```
+
+
+
+
+```{r results='asis'}
+stargazer(attitude, header=FALSE, type='html')
+```
+
+ANOVA PRACTICE
+
+```{r}
+carbon<-lm(iso$C13ap~iso$Genus*iso$Site)
+anova(carbon)
+```
+```{r}
+oxygen<-lm(iso$O18ap~iso$Genus*iso$Site)
+anova(oxygen)
+```
+
+
